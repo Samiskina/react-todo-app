@@ -2,12 +2,12 @@ import { nanoid } from "nanoid";
 import { useState } from "react";
 import { FiTrash, FiPlus } from "react-icons/fi";
 
-function App() {
+const App = () => {
 
-  const [todos, setTodos] = useState(JSON.parse(localStorage.getItem("todos")) || []);
+  const [todos, setTodos] = useState(() => JSON.parse(localStorage.getItem("todos")) || []);
   const [newTask, setNewTask] = useState("");
 
-  function addTodos(task) {
+  const addTodos = (task) => {
     const todo = { id: nanoid(), task, completed: false };
     setTodos((prevTodos) => {
       const newTodo = [todo, ...prevTodos];
@@ -16,18 +16,20 @@ function App() {
     });
   }
 
-  function complete(todoId) {
-    const updatedTask = todos.map((x) =>
-      x.id === todoId ? { ...x, completed: !x.completed } : x
-    );
-    localStorage.setItem("todos", JSON.stringify(updatedTask));
-    setTodos(updatedTask);
+  const complete = (todoId) => {
+    setTodos(prev => {
+      const updatedTask = prev.map((x) => x.id === todoId ? { ...x, completed: !x.completed } : x);
+      localStorage.setItem("todos", JSON.stringify(updatedTask));
+      return updatedTask;
+    });
   }
 
-  function deleteTodos(todoId) {
-    const deleteTask = todos.filter((x) => x.id !== todoId);
-    localStorage.setItem("todos", JSON.stringify(deleteTask));
-    setTodos(deleteTask);
+  const deleteTodos = (todoId) => {
+    setTodos(prev => {
+      const deleteTask = prev.filter((x) => x.id !== todoId);
+      localStorage.setItem("todos", JSON.stringify(deleteTask));
+      return deleteTask;
+    });
   }
 
   return (
@@ -42,17 +44,21 @@ function App() {
             type="search"
             className="w-full px-5 bg-transparent outline-none"
             placeholder="Add todo..."
+            value={newTask}
           />
           <button
-            onClick={() => addTodos(newTask)}
+            onClick={() => {
+              addTodos(newTask)
+              setNewTask("")
+            }}
             className="text-white rounded-r-lg w-12 flex justify-center items-center bg-green-500 h-full border border-green-500 hover:bg-green-500 focus:ring-4 focus:outline-none focus:ring-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:focus:ring-green-500"
           >
             <FiPlus />
           </button>
         </div>
-        {todos.map((_todo, index) => {
+        {todos.map((_todo) => {
           return (
-            <div key={index} className="flex justify-center items-center border-b-2 border-green-300 mt-10 pb-2">
+            <div key={_todo.id} className="flex justify-center items-center border-b-2 border-green-300 mt-10 pb-2">
               <div class="flex justify-start items-center content-start w-[600px] ">
                 <input
                   onChange={() => complete(_todo.id)}
